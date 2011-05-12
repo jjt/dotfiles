@@ -198,7 +198,7 @@ set statusline=%<%f\ (%{&ft})%=%-19(%3l,%02c%03V%)%{fugitive#statusline()}
 
 " displays tabs with :set list & displays when a line runs off-screen
 set listchars=tab:>-,eol:$,trail:-,precedes:<,extends:>
-set list
+set nolist
 
 """ Searching and Patterns
 set ignorecase              " Default to using case insensitive searches,
@@ -207,7 +207,25 @@ set hlsearch                " Highlight searches by default.
 set incsearch               " Incrementally search while typing a /regex
 
 """" Display
-colorscheme vividchalk
+colorscheme wombat
+
+map ,# :s/^/#/<CR>
+map ,/ :s/^/\/\//<CR>
+map ,> :s/^/> /<CR>
+map ," :s/^/\"/<CR>
+map ,% :s/^/%/<CR>
+map ,! :s/^/!/<CR>
+map ,; :s/^/;/<CR>
+map ,- :s/^/--/<CR>
+map ,c :s/^\/\/\\|^--\\|^> \\|^[#"%!;]//<CR>
+map <leader>rs <ESC>:call ReloadAllSnippets() <CR>
+nmap <leader>ss :wa<CR>:mksession! ~/vim/sessions/
+nmap <leader>so :wa<CR>:so ~/vim/sessions/
+map ; :
+noremap ;; ;
+map <C-J> <C-W>j<C-W>_
+map <C-K> <C-W>k<C-W>_
+
 
 " ==========================================================
 " Python
