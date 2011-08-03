@@ -136,16 +136,16 @@ set wildmenu                  " Menu completion in command mode on <Tab>
 set wildmode=full             " <Tab> cycles between all matching choices.
 
 " Ignore these files when completing
-set wildignore+=*.o,*.obj,.git,*.pyc 
-set grepprg=ack-grep          " replace the default grep program with ack
+"set wildignore+=*.o,*.obj,.git,*.pyc 
+"set grepprg=ack-grep          " replace the default grep program with ack
 
 " Auto change the directory to the current file I'm working on
 "autocmd BufEnter * lcd %:p:h
 
 """ Insert completion
 " don't select first item, follow typing in autocomplete
-set completeopt=menuone,longest,preview
-set pumheight=6             " Keep a small completion window
+"set completeopt=menuone,longest,preview
+"set pumheight=6             " Keep a small completion window
 
 " show a line at column 79
  if exists("&colorcolumn")
@@ -209,6 +209,9 @@ set incsearch               " Incrementally search while typing a /regex
 """" Display
 colorscheme wombat
 
+set noautochdir
+set sessionoptions=buffers,tabpages
+
 map ,# :s/^/#/<CR>
 map ,/ :s/^/\/\//<CR>
 map ,> :s/^/> /<CR>
@@ -219,13 +222,29 @@ map ,; :s/^/;/<CR>
 map ,- :s/^/--/<CR>
 map ,c :s/^\/\/\\|^--\\|^> \\|^[#"%!;]//<CR>
 map <leader>rs <ESC>:call ReloadAllSnippets() <CR>
-nmap <leader>ss :wa<CR>:mksession! ~/vim/sessions/
-nmap <leader>so :wa<CR>:so ~/vim/sessions/
+nmap <leader>ss :wa<CR>:mksession! ~/.vim/sessions/
+nmap <leader>so :wa<CR>:so ~/.vim/sessions/
+map <leader>p :tabn<CR>
+map <leader>o :tabp<CR>
+map <leader>cjs :%s/^.*console\.log.*\n//gc <CR>
+
+" Ctrl-j/k deletes blank line below/above, and Alt-j/k inserts.
+nnoremap <silent><F2> m`:silent +g/\m^\s*$/d<CR>``:noh<CR>
+nnoremap <silent><C-k> m`:silent -g/\m^\s*$/d<CR>``:noh<CR>
+nnoremap <silent><A-j> :set paste<CR>m`o<Esc>``:set nopaste<CR>
+nnoremap <silent><A-k> :set paste<CR>m`O<Esc>``:set nopaste<CR>
+
 map ; :
 noremap ;; ;
 map <C-J> <C-W>j<C-W>_
 map <C-K> <C-W>k<C-W>_
 
+
+au BufRead,BufNewFIle *.scss set filetype=scss
+
+au BufRead,BufNewFile *.php set filetype=php.html
+
+autocmd BufEnter * lcd %:p:h
 
 " ==========================================================
 " Python
@@ -253,12 +272,6 @@ endfunction
 " Javascript
 " ==========================================================
 au BufRead *.js set makeprg=jslint\ %
-
-" ==========================================================
-" SuperTab - Allows us to get code completion with tab
-" ==========================================================
-" Try different completion methods depending on its context
-let g:SuperTabDefaultCompletionType = "context"
 
 " Add the virtualenv's site-packages to vim path
 py << EOF
