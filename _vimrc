@@ -36,8 +36,6 @@ cmap w!! w !sudo tee % >/dev/null
 " ctrl-jklm  changes to that split
 map <c-j> <c-w>j
 map <c-k> <c-w>k
-map <c-l> <c-w>l
-map <c-h> <c-w>h
 
 " and lets make these all work in insert mode too ( <C-O> makes next cmd
 "  happen as if in command mode )
@@ -93,9 +91,9 @@ set wildmode=full             " <Tab> cycles between all matching choices.
 "set pumheight=6             " Keep a small completion window
 
 " show a line at column 79
-if exists("&colorcolumn")
-    set colorcolumn=79
-endif
+"if exists("&colorcolumn")
+"    set colorcolumn=79
+"endif
 
 """ Moving Around/Editing
 set cursorline              " have a line indicate the cursor location
@@ -115,8 +113,11 @@ set softtabstop=4           " <BS> over an autoindent deletes both spaces.
 set expandtab               " Use spaces, not tabs, for autoindent/tab key.
 set shiftround              " rounds indent to a multiple of shiftwidth
 set matchpairs+=<:>         " show matching <> (html mainly) as well
-set foldmethod=indent       " allow us to fold on indents
+set foldmethod=manual       " allow us to fold on indents
 set foldlevel=99            " don't fold by default
+set foldlevelstart=99            " don't fold by default
+set undodir=~/.vim/undodir
+set undofile
 
 " close preview window automatically when we move around
 autocmd CursorMovedI * if pumvisible() == 0|pclose|endif
@@ -170,22 +171,76 @@ map ,c :s/^\/\/\\|^--\\|^> \\|^[#"%!;]//<CR>
 map <leader>rs <ESC>:call ReloadAllSnippets() <CR>
 nmap <leader>ss :wa<CR>:mksession! ~/.vim/sessions/
 nmap <leader>so :wa<CR>:so ~/.vim/sessions/
-map <leader>p :tabn<CR>
-map <leader>o :tabp<CR>
+map <C-l> :tabn <CR>
+map <C-h> :tabp <CR>
+map <C-L> :tabn <CR>
+map <C-H> :tabp <CR>
 map <leader>cjs :%s/^.*console\.log.*\n//gc <CR>
-
+map <leader>t :tabn<Space> 
+map <leader>b :buffer<Space>
 
 map ; :
 noremap ;; ;
 map <C-J> <C-W>j<C-W>_
 map <C-K> <C-W>k<C-W>_
-
+"map <C-L> <C-W>l<C-W>_
+"map <C-H> <C-W>h<C-W>_
+nnoremap <F5> :buffers<CR>:buffer<Space>
 
 au BufRead,BufNewFIle *.scss set filetype=scss
-
 au BufRead,BufNewFile *.php set filetype=php.html
+au BufRead,BufNewFile *.coffee set filetype=coffee
+au BufRead,BufNewFile *.hamlpy set filetype=haml
+au BufRead,BufNewFile *.py set filetype=pydjango.python
 
 autocmd BufEnter * lcd %:p:h
+
+" Jump to the next or previous line that has the same level or a lower
+" level of indentation than the current line.
+"
+" exclusive (bool): true: Motion is exclusive
+" false: Motion is inclusive
+" fwd (bool): true: Go to next line
+" false: Go to previous line
+" lowerlevel (bool): true: Go to line with lower indentation level
+" false: Go to line with the same indentation level
+" skipblanks (bool): true: Skip blank lines
+" false: Don't skip blank lines
+function! NextIndent(exclusive, fwd, lowerlevel, skipblanks)
+  let line = line('.')
+  let column = col('.')
+  let lastline = line('$')
+  let indent = indent(line)
+  let stepvalue = a:fwd ? 1 : -1
+  while (line > 0 && line <= lastline)
+    let line = line + stepvalue
+    if ( ! a:lowerlevel && indent(line) == indent ||
+          \ a:lowerlevel && indent(line) < indent)
+      if (! a:skipblanks || strlen(getline(line)) > 0)
+        if (a:exclusive)
+          let line = line - stepvalue
+        endif
+        exe line
+        exe "normal " column . "|"
+        return
+      endif
+    endif
+  endwhile
+endfunction
+
+" Moving back and forth between lines of same or lower indentation.
+nnoremap <silent> [l :call NextIndent(0, 0, 0, 1)<CR>
+nnoremap <silent> ]l :call NextIndent(0, 1, 0, 1)<CR>
+nnoremap <silent> [L :call NextIndent(0, 0, 1, 1)<CR>
+nnoremap <silent> ]L :call NextIndent(0, 1, 1, 1)<CR>
+vnoremap <silent> [l <Esc>:call NextIndent(0, 0, 0, 1)<CR>m'gv''
+vnoremap <silent> ]l <Esc>:call NextIndent(0, 1, 0, 1)<CR>m'gv''
+vnoremap <silent> [L <Esc>:call NextIndent(0, 0, 1, 1)<CR>m'gv''
+vnoremap <silent> ]L <Esc>:call NextIndent(0, 1, 1, 1)<CR>m'gv''
+onoremap <silent> [l :call NextIndent(0, 0, 0, 1)<CR>
+onoremap <silent> ]l :call NextIndent(0, 1, 0, 1)<CR>
+onoremap <silent> [L :call NextIndent(1, 0, 1, 1)<CR>
+onoremap <silent> ]L :call NextIndent(1, 1, 1, 1)<CR>
 
 " ==========================================================
 " Python
@@ -212,21 +267,35 @@ endfunction
 " ==========================================================
 " Javascript
 " ==========================================================
+function! JavaScriptFold() 
+    setl foldmethod=syntax
+    setl foldlevelstart=1
+    syn region foldBraces start=/{/ end=/}/ transparent fold keepend extend
+
+    function! FoldText()
+        return substitute(getline(v:foldstart), '{.*', '{...}', '')
+    endfunction
+    setl foldtext=FoldText()
+endfunction
+au FileType javascript call JavaScriptFold()
+au FileType javascript setl fen
+
+
 au BufRead *.js set makeprg=jslint\ %
 
 " Add the virtualenv's site-packages to vim path
-py << EOF
-import os.path
-import sys
-import vim
-if 'VIRTUALENV' in os.environ:
-    project_base_dir = os.environ['VIRTUAL_ENV']
-    sys.path.insert(0, project_base_dir)
-    activate_this = os.path.join(project_base_dir, 'bin/activate_this.py')
-    execfile(activate_this, dict(__file__=activate_this))
-EOF
-
-" Load up virtualenv's vimrc if it exists
-if filereadable($VIRTUAL_ENV . '/.vimrc')
-    source $VIRTUAL_ENV/.vimrc
-endif
+"py << EOF
+"import os.path
+"import sys
+"import vim
+"if 'VIRTUALENV' in os.environ:
+"    project_base_dir = os.environ['VIRTUAL_ENV']
+"    sys.path.insert(0, project_base_dir)
+"    activate_this = os.path.join(project_base_dir, 'bin/activate_this.py')
+"    execfile(activate_this, dict(__file__=activate_this))
+"EOF
+"
+"" Load up virtualenv's vimrc if it exists
+"if filereadable($VIRTUAL_ENV . '/.vimrc')
+"    source $VIRTUAL_ENV/.vimrc
+"endif

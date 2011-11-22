@@ -3,12 +3,9 @@
 " URL:         http://github.com/kchmck/vim-coffee-script
 " License:     WTFPL
 
-if exists("b:current_syntax")
+" Bail if our syntax is already loaded.
+if exists('b:current_syntax') && b:current_syntax == 'coffee'
   finish
-endif
-
-if version < 600
-  syn clear
 endif
 
 " Include JavaScript for coffeeEmbed.
@@ -37,14 +34,20 @@ hi def link coffeeConditional Conditional
 syn match coffeeException /\<\%(try\|catch\|finally\)\>/ display
 hi def link coffeeException Exception
 
-syn match coffeeKeyword /\<\%(new\|in\|of\|by\|and\|or\|not\|is\|isnt\|class\|extends\|super\|own\|do\)\>/
+syn match coffeeKeyword /\<\%(new\|in\|of\|by\|and\|or\|not\|is\|isnt\|class\|extends\|super\|do\)\>/
+\                       display
+" The `own` keyword is only a keyword after `for`.
+syn match coffeeKeyword /\<for\s\+own\>/ contained containedin=coffeeRepeat
 \                       display
 hi def link coffeeKeyword Keyword
 
 syn match coffeeOperator /\<\%(instanceof\|typeof\|delete\)\>/ display
 hi def link coffeeOperator Operator
 
-syn match coffeeExtendedOp /[+\-*/%&|\^=!<>?]=\?\|\%(and\|or\)=\|\.\|::/ display
+" The first case matches symbol operators only if they have an operand before.
+syn match coffeeExtendedOp /\%(\S\s*\)\@<=[+\-*/%&|\^=!<>?.]\+\|[-=]>\|--\|++\|::/
+\                          display
+syn match coffeeExtendedOp /\<\%(and\|or\)=/ display
 hi def link coffeeExtendedOp coffeeOperator
 
 " This is separate from `coffeeExtendedOp` to help differentiate commas from
@@ -92,6 +95,7 @@ hi def link coffeeString String
 syn match coffeeNumber /\i\@<![-+]\?\d\+\%([eE][+-]\?\d\+\)\?/ display
 " A hex number
 syn match coffeeNumber /\<0[xX]\x\+\>/ display
+syn match coffeeNumber /\<0b[01]\+\>/ display
 hi def link coffeeNumber Number
 
 " A floating-point number, including a leading plus or minus
@@ -111,10 +115,10 @@ syn match coffeeAssignOp /:/ contained display
 hi def link coffeeAssignOp coffeeOperator
 
 " Strings used in string assignments, which can't have interpolations
-syn region coffeeAssignString start=/"/ skip=/\\\\\|\\"/ end=/"/
-\                             contained contains=@coffeeBasicString
-syn region coffeeAssignString start=/'/ skip=/\\\\\|\\'/ end=/'/
-\                             contained contains=@coffeeBasicString
+syn region coffeeAssignString start=/"/ skip=/\\\\\|\\"/ end=/"/ contained
+\                             contains=@coffeeBasicString
+syn region coffeeAssignString start=/'/ skip=/\\\\\|\\'/ end=/'/ contained
+\                             contains=@coffeeBasicString
 hi def link coffeeAssignString String
 
 " A normal object assignment
@@ -140,8 +144,8 @@ syn region coffeeBlockComment start=/####\@!/ end=/###/
 hi def link coffeeBlockComment coffeeComment
 
 " A comment in a heregex
-syn region coffeeHeregexComment start=/#/ end=/\ze\/\/\/\|$/
-\                               contained contains=@Spell,coffeeTodo
+syn region coffeeHeregexComment start=/#/ end=/\ze\/\/\/\|$/ contained
+\                               contains=@Spell,coffeeTodo
 hi def link coffeeHeregexComment coffeeComment
 
 " Embedded JavaScript
@@ -150,9 +154,8 @@ syn region coffeeEmbed matchgroup=coffeeEmbedDelim
 \                      contains=@coffeeJS
 hi def link coffeeEmbedDelim Delimiter
 
-syn region coffeeInterp matchgroup=coffeeInterpDelim
-\                       start=/#{/ end=/}/
-\                       contained contains=@coffeeAll
+syn region coffeeInterp matchgroup=coffeeInterpDelim start=/#{/ end=/}/ contained
+\                       contains=@coffeeAll
 hi def link coffeeInterpDelim PreProc
 
 " A string escape sequence
@@ -161,7 +164,7 @@ hi def link coffeeEscape SpecialChar
 
 " A regex -- must not follow a parenthesis, number, or identifier, and must not
 " be followed by a number
-syn region coffeeRegex start=/\%(\%()\|\i\@<!\d\)\s*\|\i\)\@<!\/\s\@!/
+syn region coffeeRegex start=/\%(\%()\|\i\@<!\d\)\s*\|\i\)\@<!\/=\@!\s\@!/
 \                      skip=/\[[^\]]\{-}\/[^\]]\{-}\]/
 \                      end=/\/[gimy]\{,4}\d\@!/
 \                      oneline contains=@coffeeBasicString
@@ -215,17 +218,20 @@ hi def link coffeeCurly coffeeBlock
 hi def link coffeeParen coffeeBlock
 
 " This is used instead of TOP to keep things coffee-specific for good
-" embedding. Errors and `contained` groups aren't included.
+" embedding. `contained` groups aren't included.
 syn cluster coffeeAll contains=coffeeStatement,coffeeRepeat,coffeeConditional,
 \                              coffeeException,coffeeKeyword,coffeeOperator,
 \                              coffeeExtendedOp,coffeeSpecialOp,coffeeBoolean,
 \                              coffeeGlobal,coffeeSpecialVar,coffeeObject,
 \                              coffeeConstant,coffeeString,coffeeNumber,
-\                              coffeeFloat,coffeeObjAssign,
+\                              coffeeFloat,coffeeReservedError,coffeeObjAssign,
 \                              coffeeObjStringAssign,coffeeObjNumberAssign,
 \                              coffeeComment,coffeeBlockComment,coffeeEmbed,
 \                              coffeeRegex,coffeeHeregex,coffeeHeredoc,
-\                              coffeeDotAccess,coffeeProtoAccess,coffeeCurlies,
-\                              coffeeBrackets,coffeeParens
+\                              coffeeSpaceError,coffeeSemicolonError,
+\                              coffeeDotAccess,coffeeProtoAccess,
+\                              coffeeCurlies,coffeeBrackets,coffeeParens
 
-let b:current_syntax = "coffee"
+if !exists('b:current_syntax')
+  let b:current_syntax = 'coffee'
+endif
