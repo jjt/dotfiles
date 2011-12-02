@@ -178,6 +178,7 @@ map <C-H> :tabp <CR>
 map <leader>cjs :%s/^.*console\.log.*\n//gc <CR>
 map <leader>t :tabn<Space> 
 map <leader>b :buffer<Space>
+nnoremap <Leader>s :%s/\<<C-r><C-w>\>//gic<Left><Left>
 
 map ; :
 noremap ;; ;
