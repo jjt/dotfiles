@@ -191,7 +191,7 @@ nnoremap <F5> :buffers<CR>:buffer<Space>
 au BufRead,BufNewFIle *.scss set filetype=scss
 au BufRead,BufNewFile *.php set filetype=php.html
 au BufRead,BufNewFile *.coffee set filetype=coffee
-au BufRead,BufNewFile *.hamlpy set filetype=haml
+au BufRead,BufNewFile *.hamlpy set filetype=haml sw=4 ts=4 sts=4
 au BufRead,BufNewFile *.py set filetype=pydjango.python
 
 autocmd BufEnter * lcd %:p:h
@@ -229,41 +229,26 @@ function! NextIndent(exclusive, fwd, lowerlevel, skipblanks)
   endwhile
 endfunction
 
+let g:I=0
+function! INC(increment)
+    let g:I =g:I + a:increment
+    return g:I
+endfunction
+
 " Moving back and forth between lines of same or lower indentation.
 nnoremap <silent> [l :call NextIndent(0, 0, 0, 1)<CR>
 nnoremap <silent> ]l :call NextIndent(0, 1, 0, 1)<CR>
-nnoremap <silent> [L :call NextIndent(0, 0, 1, 1)<CR>
-nnoremap <silent> ]L :call NextIndent(0, 1, 1, 1)<CR>
+nnoremap <silent> [k :call NextIndent(0, 0, 1, 1)<CR>
+nnoremap <silent> ]k :call NextIndent(0, 1, 1, 1)<CR>
 vnoremap <silent> [l <Esc>:call NextIndent(0, 0, 0, 1)<CR>m'gv''
 vnoremap <silent> ]l <Esc>:call NextIndent(0, 1, 0, 1)<CR>m'gv''
-vnoremap <silent> [L <Esc>:call NextIndent(0, 0, 1, 1)<CR>m'gv''
-vnoremap <silent> ]L <Esc>:call NextIndent(0, 1, 1, 1)<CR>m'gv''
+vnoremap <silent> [k <Esc>:call NextIndent(0, 0, 1, 1)<CR>m'gv''
+vnoremap <silent> ]k <Esc>:call NextIndent(0, 1, 1, 1)<CR>m'gv''
 onoremap <silent> [l :call NextIndent(0, 0, 0, 1)<CR>
 onoremap <silent> ]l :call NextIndent(0, 1, 0, 1)<CR>
-onoremap <silent> [L :call NextIndent(1, 0, 1, 1)<CR>
-onoremap <silent> ]L :call NextIndent(1, 1, 1, 1)<CR>
+onoremap <silent> [k :call NextIndent(1, 0, 1, 1)<CR>
+onoremap <silent> ]k :call NextIndent(1, 1, 1, 1)<CR>
 
-" ==========================================================
-" Python
-" ==========================================================
-"au BufRead *.py compiler nose
-au FileType python set omnifunc=pythoncomplete#Complete
-au BufRead *.py set efm=%C\ %.%#,%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@=%m
-
-" Don't let pyflakes use the quickfix window
-let g:pyflakes_use_quickfix = 0
-
-" turn of hlsearch and update pyflakes on enter
-au BufRead,BufNewFile *.py nnoremap <buffer><CR> :nohlsearch\|:call PressedEnter()<cr>
-nnoremap <buffer><CR> :nohlsearch\|:call PressedEnter()<cr>
-
-" clear the search buffer when hitting return and update pyflakes checks
-function! PressedEnter()
-    :nohlsearch
-    if &filetype == 'python'
-        :PyflakesUpdate
-    end
-endfunction
 
 " ==========================================================
 " Javascript
