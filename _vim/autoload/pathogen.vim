@@ -141,4 +141,4 @@ endfunction " }}}1
 
 command! -bar Helptags :call pathogen#helptags()
 
-" vim:set ft=vim ts=8 sw=2 sts=2:
+" vim:set ft=vim ts=4 sw=4 sts=4:
