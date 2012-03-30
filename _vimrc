@@ -116,7 +116,10 @@ set matchpairs+=<:>         " show matching <> (html mainly) as well
 set foldmethod=manual       " allow us to fold on indents
 set foldlevel=99            " don't fold by default
 set foldlevelstart=99            " don't fold by default
-set undodir=~/.vim/undodir
+
+set undodir=./.vim/undo//,~/.vim/undo//,/var/tmp/vim/undo//
+set backupdir=./.vim/backup//,~/.vim/backup//,/var/tmp/vim/backup//
+set directory=./.vim/swap//,~/.vim/swap//,/var/tmp/vim/swap//
 set undofile
 
 " close preview window automatically when we move around
@@ -130,6 +133,10 @@ set noautoread              " Don't automatically re-read changed files.
 set modeline                " Allow vim options to be embedded in files;
 set modelines=5             " they must be within the first or last 5 lines.
 set ffs=unix,dos,mac        " Try recognizing dos, unix, and mac line endings.
+
+"""" Use a local dir for swap/backup if defined, then home dir, then fall back to system dir
+set directory=./.vim//,~/.vim/swap-backup,/var/tmp/vim// 
+set backupdir=./.vim//,~/.vim/swap-backup,/var/tmp/vim//
 
 """" Messages, Info, Status
 set ls=2                    " allways show status line
