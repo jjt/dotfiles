@@ -73,6 +73,7 @@ filetype on                   " try to detect filetypes
 filetype plugin indent on     " enable loading indent file for filetype
 set number                    " Display line numbers
 set numberwidth=1             " using only 1 column (and 1 space) while possible
+set relativenumber
 "set background=dark           " We are using dark background in vim
 set title                     " show title in console title bar
 set wildmenu                  " Menu completion in command mode on <Tab>
@@ -182,10 +183,12 @@ map <C-l> :tabn <CR>
 map <C-h> :tabp <CR>
 map <C-L> :tabn <CR>
 map <C-H> :tabp <CR>
-map <leader>cjs :%s/^.*console\.log.*\n//gc <CR>
+map <leader>dcl :%s/^.*console\.log.*\n//gc <CR>
+map <leader>ccl :%s/\(^.*\)\(console\.log.*\n\)/\1\/\/\2/gc <CR>
 map <leader>t :tabn<Space> 
 map <leader>b :buffer<Space>
-nnoremap <Leader>s :%s/\<<C-r><C-w>\>//gic<Left><Left>
+nnoremap <Leader>s :%s/<C-r><C-w>//gic<Left><Left><Left><Left>
+nnoremap <Leader>sts :call SetTabStops()<Left>
 
 map ; :
 noremap ;; ;
@@ -195,13 +198,33 @@ map <C-K> <C-W>k<C-W>_
 "map <C-H> <C-W>h<C-W>_
 nnoremap <F5> :buffers<CR>:buffer<Space>
 
-au BufRead,BufNewFIle *.scss set filetype=scss
-au BufRead,BufNewFile *.php set filetype=php.html
-au BufRead,BufNewFile *.coffee set filetype=coffee
-au BufRead,BufNewFile *.hamlpy set filetype=haml sw=4 ts=4 sts=4
-au BufRead,BufNewFile *.py set filetype=pydjango.python
+inoremap jk <ESC>
+
+
+au BufRead,BufNewFIle *.scss setlocal filetype=scss
+au BufRead,BufNewFile *.php setlocal filetype=php.html
+au BufRead,BufNewFile *.coffee setlocal filetype=coffee sw=2 ts=2 sts=2
+au BufRead,BufNewFile *.js setlocal sw=2 ts=2 sts=2
+au BufRead,BufNewFile *.hamlpy setlocal filetype=haml sw=4 ts=4 sts=4
+au BufRead,BufNewFile *.py setlocal filetype=pydjango.python
 
 autocmd BufEnter * lcd %:p:h
+
+function! SetTabStops(num)
+    let &l:ts = a:num
+    let &l:sts = a:num
+    let &l:sw = a:num
+endfunction
+
+function! DeleteHiddenBuffers()
+    let tpbl=[]
+    call map(range(1, tabpagenr('$')), 'extend(tpbl, tabpagebuflist(v:val))')
+    for buf in filter(range(1, bufnr('$')), 'bufexists(v:val) && index(tpbl, v:val)==-1')
+        silent execute 'bwipeout' buf
+    endfor
+endfunction
+
+map <leader>dhb <ESC>:call DeleteHiddenBuffers() <CR>
 
 " Jump to the next or previous line that has the same level or a lower
 " level of indentation than the current line.
@@ -235,6 +258,7 @@ function! NextIndent(exclusive, fwd, lowerlevel, skipblanks)
     endif
   endwhile
 endfunction
+
 
 let g:I=0
 function! INC(increment)
