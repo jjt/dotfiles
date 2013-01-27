@@ -3,5 +3,3 @@
 *~
 _vim/ropevim/src*
 _vim/ropevim/pylibs*
-_vim/sessions/*
-!_vim/sessions
