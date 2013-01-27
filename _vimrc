@@ -71,7 +71,6 @@ call pathogen#helptags()
 syntax on                     " syntax highlighing
 filetype on                   " try to detect filetypes
 filetype plugin indent on     " enable loading indent file for filetype
-set number                    " Display line numbers
 set numberwidth=1             " using only 1 column (and 1 space) while possible
 set relativenumber
 "set background=dark           " We are using dark background in vim
@@ -316,3 +315,6 @@ au BufRead *.js set makeprg=jslint\ %
 "if filereadable($VIRTUAL_ENV . '/.vimrc')
 "    source $VIRTUAL_ENV/.vimrc
 "endif
+"
+
+python from powerline.bindings.vim import source_plugin; source_plugin()
