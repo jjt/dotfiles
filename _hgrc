@@ -1,0 +1,10 @@
+[auth]
+shopethical.prefix = hg.shopethical.com
+shopethical.username = lowboy
+shopethical.password = bib2k8ftw
+shopethical.schemes = https
+
+[ui]
+username = Jason Trill <lowboy@gmail.com>
+ignore = ~/.hgignore
+reportoldssl = false
